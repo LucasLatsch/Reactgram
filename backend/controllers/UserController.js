@@ -17,7 +17,7 @@ const register = async (req, res) => {
   const { name, email, password } = req.body;
 
   // check if user exists
-  const user = await User.findOne({ email }, { maxTimeMS: 30000 });
+  const user = await User.findOne({ email });
   console.log(user);
 
   if (user) {
@@ -50,6 +50,32 @@ const register = async (req, res) => {
   });
 };
 
+//Sign user in
+const login = async (req, res) => {
+  const { email, password } = req.body;
+  const user = await User.findOne({ email });
+
+  // check if user exists
+  if (!user) {
+    res.status(404).json({ errors: ["Usuário não encontrado."] });
+    return;
+  }
+
+  // check if password is correct
+  if (!(await bcrypt.compare(password, user.password))) {
+    res.status(401).json({ errors: ["Senha inválida."] });
+    return;
+  }
+
+  //return user token
+  res.json({
+    _id: user._id,
+    profileImage: user.profileImage,
+    token: generateToken(user._id),
+  });
+};
+
 module.exports = {
   register,
+  login,
 };
