@@ -115,6 +115,46 @@ const updatePhoto = async (req, res) => {
   res.status(200).json({ photo, message: "Photo updated" });
 };
 
+// Like or Dislike a photo
+const likePhoto = async (req, res) => {
+  const { id } = req.params;
+
+  const reqUser = req.user;
+
+  const photo = await Photo.findById(id);
+
+  // Check if the photo exists
+  if (!photo) {
+    return res.status(404).json({ errors: ["Photo not found"] });
+  }
+
+  // Check if the user has already liked the photo
+  if (photo.likes.includes(reqUser._id)) {
+    // If the user already liked, remove the like (dislike)
+    photo.likes = photo.likes.filter(
+      (userId) => userId.toString() !== reqUser._id.toString()
+    );
+    await photo.save();
+
+    return res.status(200).json({
+      photoId: id,
+      userId: reqUser._id,
+      message: "Photo disliked",
+    });
+  }
+
+  // If the user hasn't liked yet, add the like
+  photo.likes.push(reqUser._id);
+
+  await photo.save();
+
+  res.status(200).json({
+    photoId: id,
+    userId: reqUser._id,
+    message: "Photo liked",
+  });
+};
+
 module.exports = {
   insertPhoto,
   deletePhoto,
@@ -122,4 +162,5 @@ module.exports = {
   getUserPhotos,
   getPhotoById,
   updatePhoto,
+  likePhoto,
 };
