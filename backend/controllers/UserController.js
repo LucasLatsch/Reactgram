@@ -67,7 +67,7 @@ const login = async (req, res) => {
     return;
   }
 
-  //return user token
+  // return user with token
   res.json({
     _id: user._id,
     profileImage: user.profileImage,
@@ -75,7 +75,13 @@ const login = async (req, res) => {
   });
 };
 
+// Get current logged user
+const getCurrentUser = async (req, res) => {
+  const user = req.user;
+  res.status(200).json(user);
+};
 module.exports = {
   register,
   login,
+  getCurrentUser,
 };
