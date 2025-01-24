@@ -8,12 +8,12 @@ const conn = async () => {
       `mongodb+srv://${dbUser}:${dbPassword}@cluster0.bhele.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
     );
     console.log("Connected to Database");
-    console.log(dbConn);
 
     return dbConn;
   } catch (err) {
-    console.log("nao conectou");
+    console.log("Error connecting to Database", err);
   }
 };
 
-//connection
+conn();
+module.exports = conn;
