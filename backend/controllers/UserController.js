@@ -2,7 +2,6 @@ const User = require("../models/User");
 
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { default: mongoose } = require("mongoose");
 
 const jwtSecret = process.env.JWT_SECRET;
 
@@ -18,7 +17,8 @@ const register = async (req, res) => {
   const { name, email, password } = req.body;
 
   // check if user exists
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email }, { maxTimeMS: 30000 });
+  console.log(user);
 
   if (user) {
     res.status(422).json({ errors: ["Por favor, utilize outro e-mail."] });
