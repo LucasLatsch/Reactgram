@@ -30,4 +30,18 @@ const photoUpdateValidation = () => {
   ];
 };
 
-module.exports = { photoInsertValidation, photoUpdateValidation };
+const commentValidation = () => {
+  return [
+    body("comment")
+      .isString()
+      .withMessage("comment is required")
+      .isLength({ min: 1 })
+      .withMessage("Title must be at least 1 characters"),
+  ];
+};
+
+module.exports = {
+  photoInsertValidation,
+  photoUpdateValidation,
+  commentValidation,
+};
