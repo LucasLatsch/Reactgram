@@ -4,13 +4,21 @@ import "./Auth.css";
 import { Link, Links } from "react-router-dom";
 
 // Hooks
-import { UseState, useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+
+// Redux
+import { register, reset } from "../../slices/authSlice";
 
 const Register = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  const dispath = useDispatch();
+
+  const { loading, error } = useSelector((state) => state.auth);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -24,11 +32,19 @@ const Register = () => {
 
     console.log(user);
 
-    setName("");
-    setEmail("");
-    setPassword("");
-    setConfirmPassword("");
+    dispath(register(user));
+
+    // setName("");
+    // setEmail("");
+    // setPassword("");
+    // setConfirmPassword("");
   };
+
+  // Clean all auth states
+  useEffect(() => {
+    dispath(reset());
+  }, [dispath]);
+
   return (
     <div id="register">
       <h2>Reactgram</h2>
