@@ -44,11 +44,15 @@ export const getUserPhotos = createAsyncThunk(
 );
 
 // Get photo
-export const getPhoto = createAsyncThunk("photo/getphoto", async (id) => {
-  const data = await photoService.getPhoto(id);
+export const getPhoto = createAsyncThunk(
+  "photo/getphoto",
+  async (id, thunkAPI) => {
+    const token = thunkAPI.getState().auth.user.token;
+    const data = await photoService.getPhoto(id, token);
 
-  return data;
-});
+    return data;
+  }
+);
 
 // Delete a photo
 export const deletePhoto = createAsyncThunk(
@@ -125,11 +129,15 @@ export const comment = createAsyncThunk(
 );
 
 // Get all photos
-export const getPhotos = createAsyncThunk("photo/getall", async () => {
-  const data = await photoService.getPhotos();
+export const getPhotos = createAsyncThunk(
+  "photo/getall",
+  async (_, thunkAPI) => {
+    const token = thunkAPI.getState().auth.user.token;
+    const data = await photoService.getPhotos(token);
 
-  return data;
-});
+    return data;
+  }
+);
 
 // Search photos by title
 export const searchPhotos = createAsyncThunk(
@@ -138,9 +146,6 @@ export const searchPhotos = createAsyncThunk(
     const token = thunkAPI.getState().auth.user.token;
 
     const data = await photoService.searchPhotos(query, token);
-
-    console.log(data);
-    console.log(data.errors);
 
     return data;
   }
@@ -188,7 +193,6 @@ export const photoSlice = createSlice({
         state.error = null;
       })
       .addCase(getPhoto.fulfilled, (state, action) => {
-        console.log(action.payload);
         state.loading = false;
         state.success = true;
         state.error = null;
@@ -242,13 +246,35 @@ export const photoSlice = createSlice({
         state.success = true;
         state.error = null;
 
-        if (state.photo.likes) {
-          state.photo.likes.push(action.payload.userId);
+        // A lógica de curtir/descurtir
+        const userId = action.payload.userId;
+        const photoId = action.payload.photoId;
+
+        // Atualizando os likes da foto atual (state.photo)
+        if (state.photo._id === photoId) {
+          // Verificar se o usuário já curtiu a foto
+          if (state.photo.likes.includes(userId)) {
+            // Se já curtiu, remove o like
+            state.photo.likes = state.photo.likes.filter(
+              (like) => like !== userId
+            );
+          } else {
+            // Se não curtiu, adiciona o like
+            state.photo.likes.push(userId);
+          }
         }
 
-        state.photos.map((photo) => {
-          if (photo._id === action.payload.photoId) {
-            return photo.likes.push(action.payload.userId);
+        // Atualizando as fotos na lista de photos (state.photos)
+        state.photos = state.photos.map((photo) => {
+          if (photo._id === photoId) {
+            // Verificar se o usuário já curtiu a foto
+            if (photo.likes.includes(userId)) {
+              // Se já curtiu, remove o like
+              photo.likes = photo.likes.filter((like) => like !== userId);
+            } else {
+              // Se não curtiu, adiciona o like
+              photo.likes.push(userId);
+            }
           }
           return photo;
         });
@@ -264,7 +290,7 @@ export const photoSlice = createSlice({
         state.success = true;
         state.error = null;
 
-        state.photo.comments.push(action.payload.comment);
+        state.photo.comment.push(action.payload.comment);
 
         state.message = action.payload.message;
       })
@@ -277,7 +303,6 @@ export const photoSlice = createSlice({
         state.error = null;
       })
       .addCase(getPhotos.fulfilled, (state, action) => {
-        console.log(action.payload);
         state.loading = false;
         state.success = true;
         state.error = null;
@@ -288,7 +313,6 @@ export const photoSlice = createSlice({
         state.error = null;
       })
       .addCase(searchPhotos.fulfilled, (state, action) => {
-        console.log(action.payload);
         state.loading = false;
         state.success = true;
         state.error = null;
